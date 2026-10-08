@@ -112,6 +112,22 @@ details.reg>summary span{color:var(--muted);font-weight:500;font-family:var(--f-
 .leaflet-bar a{background:var(--panel);color:var(--ink);border-color:var(--line)}
 .tip{position:absolute;left:10px;bottom:10px;z-index:500;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:.8rem;max-width:calc(100% - 20px)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.stats i{font-style:normal}.stats .sh{display:none}
+.modebar{justify-content:flex-start}
+a.judge{font-weight:700;font-size:.92rem;text-decoration:none;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:6px 18px;display:inline-flex;align-items:center}
+a.judge:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+body.fs .fsrow a.judge{padding:4px 14px;font-size:.85rem}
+@media (max-width:700px){
+  header .intro{display:none}
+  .modebar{margin-top:8px;gap:8px;justify-content:space-between}
+  .modebar .seg .fbtn{font-size:.82rem;padding:3px 13px}
+  a.judge{font-size:.82rem;padding:4px 16px}
+  .stats{flex-wrap:nowrap;gap:12px;font-size:.72rem;margin-top:6px;white-space:nowrap;overflow:hidden}
+  .stats b{font-size:.95rem;margin-right:2px}
+  .stats .lg{display:none}.stats .sh{display:inline}
+  body:not(.fs) .mapbox{margin-right:38px}
+}
 </style>
 </head>
 <body>
@@ -155,13 +171,14 @@ body.fs .fspanel{display:flex;flex-direction:column;gap:8px;padding:10px 12px ca
 <header>
   <div class="eyebrow">DoorDash merchants · Adelaide · 2026-10-07</div>
   <h1>阿德莱德送餐商圈图</h1>
-  <p>商圈全部按 DoorDash 真实入驻商家聚出来。送完一单，在地图上点一下你的位置，下面会按「商圈大小 → 停车 → 距离」推荐下一个去处。</p>
+  <p class="intro">商圈全部按 DoorDash 真实入驻商家聚出来。送完一单，在地图上点一下你的位置，下面会按「商圈大小 → 停车 → 距离」推荐下一个去处。</p>
   <div class="modebar">
     <div class="seg" role="group" aria-label="商家类型">
       <button class="fbtn mode" id="m-all" data-m="all">全部</button>
       <button class="fbtn mode" id="m-food" data-m="food">餐饮</button>
       <button class="fbtn mode" id="m-shop" data-m="shop">购物</button>
     </div>
+    <a class="judge" href="https://claude.ai/artifact/7idTBgEofwqheLCAMDmZyZ" target="_blank" rel="noopener">判定</a>
   </div>
   <div class="stats" id="stats"></div>
 </header>
@@ -174,6 +191,7 @@ body.fs .fspanel{display:flex;flex-direction:column;gap:8px;padding:10px 12px ca
         <div class="seg" role="group" aria-label="商家类型">
           <button class="fbtn mode" data-m="all">全部</button><button class="fbtn mode" data-m="food">餐饮</button><button class="fbtn mode" data-m="shop">购物</button>
         </div>
+        <a class="judge" href="https://claude.ai/artifact/7idTBgEofwqheLCAMDmZyZ" target="_blank" rel="noopener">判定</a>
         <button class="fbtn" id="fs-exit">退出全屏</button>
       </div>
       <div id="fsnear"></div>
@@ -272,7 +290,7 @@ const save=()=>{try{localStorage.setItem("hubstate3",JSON.stringify(state))}catc
 const km=(a,b)=>{const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lng-a.lng)*r;const x=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
 const pkColor=p=>css(p==="free"?"--ok":p==="street"?"--warn":"--bad");
 const rad=n=>state.mode==="shop"?4+Math.sqrt(n)*2.2:3+Math.sqrt(n)*0.95;
-const navUrl=h=>`https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}&travelmode=driving`;
+const navUrl=h=>`https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}&travelmode=driving&dir_action=navigate`;
 const hubs=()=>D[state.mode].hubs;
 const visible=h=>state[h.t]&&(!state.park||h.pk==="free");
 
@@ -352,7 +370,7 @@ function renderRegions(){
     const h=hubs().find(x=>x.id===b.dataset.id);map.setView([h.lat,h.lng],14);setFrom({lat:h.lat,lng:h.lng},h.title,h.id);
     document.getElementById("map").scrollIntoView({behavior:"smooth",block:"start"})}));}
 function renderStats(){const M=D[state.mode];const n=M.hubs.reduce((s,h)=>s+h.n,0);
-  document.getElementById("stats").innerHTML=`<span><b>${M.n.toLocaleString()}</b>家${MODEN[state.mode]==="全部"?"":MODEN[state.mode]}商家</span><span><b>${M.hubs.length}</b>个商圈</span><span><b>${n.toLocaleString()}</b>家在商圈里</span><span><b>${M.spots.length}</b>个候单点</span>`;
+  document.getElementById("stats").innerHTML=`<span><b>${M.n.toLocaleString()}</b><i class="lg">家${MODEN[state.mode]==="全部"?"":MODEN[state.mode]}</i>商家</span><span><b>${M.hubs.length}</b><i class="lg">个</i>商圈</span><span><b>${n.toLocaleString()}</b><i class="lg">家在商圈里</i><i class="sh">在圈内</i></span><span><b>${M.spots.length}</b><i class="lg">个</i>候单点</span>`;
   document.getElementById("tierNote").textContent=`${MODEN[state.mode]}模式的等级：${TIERS[state.mode]}。推荐只看约 ${RADIUS[state.mode]} km 直线以内的商圈，先比商家数，再比停车，最后比距离。`;}
 function syncButtons(){
   document.querySelectorAll(".mode").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===state.mode)));
@@ -425,6 +443,9 @@ renderNear=function(){_renderNear();const el=document.getElementById("fsnear");i
 // auto toggle
 document.getElementById("l-auto").addEventListener("click",()=>{state.auto=!state.auto;save();syncButtons()});
 const _sync=syncButtons;syncButtons=function(){_sync();document.getElementById("l-auto").setAttribute("aria-pressed",String(state.auto!==false))};
+const JUDGE="https://claude.ai/artifact/7idTBgEofwqheLCAMDmZyZ";
+document.querySelectorAll("a.judge").forEach(a=>a.addEventListener("click",()=>{const p=geo.pos||(current&&current.p);
+  a.href=p?`${JUDGE}#p${p.lat.toFixed(5)}_${p.lng.toFixed(5)}`:JUDGE}));
 drawBase();renderAll();
 </script>
 
