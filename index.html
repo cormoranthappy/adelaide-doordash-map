@@ -394,6 +394,7 @@ function startGeo(){if(!("geolocation" in navigator)){toast("这个浏览器不�
 function stopGeo(){if(geo.watch!==null)navigator.geolocation.clearWatch(geo.watch);geo.watch=null;locBtn.setAttribute("aria-pressed","false");
   try{geo.wake&&geo.wake.release()}catch(e){};geo.wake=null}
 map.on("dragstart",()=>{geo.follow=false});
+const _drawHubs=drawHubs;drawHubs=function(){_drawHubs();drawMe()};
 // ---- map controls ----
 let locBtn,fsBtn;
 const Ctl=L.Control.extend({options:{position:"topright"},onAdd(){const d=L.DomUtil.create("div","mapctl");
@@ -408,7 +409,8 @@ map.addControl(new Ctl());
 function setFS(on){document.body.classList.toggle("fs",on);fsBtn.setAttribute("aria-pressed",String(on));
   try{if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});
       if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
-  setTimeout(()=>map.invalidateSize(),80);setTimeout(()=>map.invalidateSize(),400);if(on)wake()}
+  const fix=()=>{map.invalidateSize();if(geo.pos&&geo.follow)map.setView([geo.pos.lat,geo.pos.lng],Math.max(map.getZoom(),13),{animate:false})};
+  setTimeout(fix,80);setTimeout(fix,400);if(on)wake()}
 document.getElementById("fs-exit").addEventListener("click",()=>setFS(false));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("fs"))setFS(false)});
 // fullscreen mini list, fed by renderNear
