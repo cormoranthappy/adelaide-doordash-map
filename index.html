@@ -476,7 +476,7 @@ function isOpen(i,day,min){const h=SH[i];if(!h)return null;
   return false}
 const fmt=m=>{m=((m%1440)+1440)%1440;return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`};
 function todayText(i,day){const h=SH[i];if(!h)return "没有营业时间数据";if(!h[day].length)return `${DAYN[day]}不营业`;
-  return DAYN[day]+" "+h[day].map(([s,e])=>`${fmt(s)}–${fmt(e)}${e>1440?"（次日）":""}`).join("、")}
+  return DAYN[day]+" "+h[day].map(([s,e])=>s===0&&e>=1440?"24 小时营业":`${fmt(s)}–${e===1440?"24:00":fmt(e)}${e>1440?"（次日）":""}`).join("、")}
 function closesIn(i,day,min){const h=SH[i];if(!h)return null;
   for(const [s,e] of h[day])if(min>=s&&min<e)return e-min;
   for(const [s,e] of h[(day+6)%7])if(e>1440&&min<e-1440)return e-1440-min;return null}
